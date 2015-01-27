@@ -66,6 +66,14 @@ function remove_duplicate($array, $field) {
 	return $new;
 }
 
+// if ?clear=true, clear the ARP table
+if (isset($_GET["clear"])) {
+        if ($_GET["clear"] == "true") {
+                $out = "";
+                $ret = exec("/usr/sbin/arp -d -a", &$out, $arpTableRetVal);
+        }
+}
+
 // Define path to AWK
 $awk = "/usr/bin/awk";
 
@@ -305,6 +313,15 @@ $data = msort($data, "dnsresolve");
 
 // Load MAC-Manufacturer table
 $mac_man = load_mac_manufacturer_table();
+
+// If ARP table clear requested, notify of status
+if (isset($_GET["clear"])) {
+        if ($_GET["clear"] == "true") {
+                if ($arpTableRetVal == 0) { print "<h3>ARP Table has been cleared!</h3>"; }
+                else { print "<h3>Unable to clear ARP Table.</h3>"; }
+        }
+}
+
 ?>
 <table width="100%" border="0" cellpadding="0" cellspacing="0" summary="diag arp">
 	<tr>
@@ -342,6 +359,9 @@ $mac_man = load_mac_manufacturer_table();
 	<tr>
 		<td><br /><?= gettext("NOTE: Local IPv6 peers use") ?> <a href="diag_ndp.php"><?= gettext("NDP") ?></a> <?= gettext("instead of ARP") ?>.</td>
 	</tr>
+	<tr>
+		<td style="text-align: right"><br /><input class="formbtn" type="button" id="pfArpTblClearBtn" value="Clear ARP Table" /></td>
+	</tr>
 </table>
 
 <?php include("fend.inc"); ?>
@@ -349,6 +369,11 @@ $mac_man = load_mac_manufacturer_table();
 <script type="text/javascript">
 //<![CDATA[
 	jQuery('#loading').html('');
+	jQuery("#pfArpTblClearBtn").click(function() {
+		if (confirm('Are you sure you want to clear the ARP table?')) {
+			window.location.href = "diag_arp.php?clear=true";
+		}
+        });
 //]]>
 </script>
 </body>
